@@ -1,295 +1,193 @@
-# Analyse des systèmes éducatifs
+# 🌍 Analyse des systèmes éducatifs – Recommandation de pays pour expansion internationale
 
-## Recommandation de pays pour une expansion internationale
+Bienvenue dans le projet **academy** !  
+Ce dépôt contient une analyse complète du dataset **EdStats** (Banque mondiale) dans le but d’**identifier les pays les plus prometteurs** pour une réflexion d’expansion à l’international.
 
-Projet d’analyse de données réalisé à partir du jeu de données **EdStats** dans le cadre d’un exercice orienté **data analysis** et **aide à la décision**.
-
----
-
-## Contexte
-
-Une entreprise souhaite étudier plusieurs pays afin d’éclairer une réflexion autour d’une **expansion à l’international**.
-
-L’objectif n’est pas seulement de décrire les systèmes éducatifs, mais d’identifier des pays présentant un environnement globalement favorable selon plusieurs dimensions utiles à la prise de décision :
-
-- niveau de développement et de connectivité ;
-- accès à l’éducation ;
-- effort public en matière d’éducation ;
-- situation du marché ;
-- taille potentielle du pays.
-
-Le jeu de données initial étant volumineux, hétérogène et partiellement bruité, le projet a consisté à :
-
-1. nettoyer et fiabiliser les données ;
-2. réduire le périmètre des pays, années et indicateurs ;
-3. construire un dataframe exploitable ;
-4. analyser les corrélations entre indicateurs ;
-5. produire une recommandation de pays sur une base quantitative.
+👉 Une startup EdTech fictive cherche à évaluer des marchés potentiels à partir d’indicateurs éducatifs, numériques et socio-économiques.
 
 ---
 
-## Objectif du projet
+## 🎯 Objectif
 
-Construire une analyse reproductible permettant de répondre à la question suivante :
+Construire une **base quantitative d’aide à la décision** et répondre à la question :
 
-> **Quels pays semblent les plus pertinents pour une réflexion d’expansion internationale, à partir d’indicateurs éducatifs, numériques et socio-économiques ?**
-
----
-
-## Données utilisées
-
-Le projet repose sur plusieurs fichiers du dataset **EdStats** :
-
-- `EdStatsCountry.csv`
-- `EdStatsCountry-Series.csv`
-- `EdStatsData.csv`
-- `EdStatsFootNote.csv`
-- `EdStatsSeries.csv`
-
-### Rôle des principaux fichiers
-
-- **Country** : informations sur les pays
-- **Series** : dictionnaire des indicateurs
-- **Data** : valeurs des indicateurs par pays et par année
-- **FootNote** : notes associées à certaines observations
-- **Country-Series** : lien entre pays et indicateurs
+> **Quels pays semblent les plus pertinents pour une expansion internationale, à partir des données éducatives et contextuelles disponibles ?**
 
 ---
 
-## Démarche analytique
+## 📁 Données utilisées
 
-### 1. Exploration et nettoyage
+Le projet s’appuie sur les **5 fichiers du dataset EdStats** :
 
-- exploration de chaque fichier ;
-- détection des doublons ;
-- analyse des valeurs manquantes ;
-- suppression des colonnes inutilisables ;
-- identification et suppression des **faux pays**.
-
-### 2. Réduction du périmètre
-
-- sélection d’indicateurs cohérents avec la problématique métier ;
-- filtrage des années jugées les plus pertinentes ;
-- réduction du nombre d’indicateurs pour conserver les plus exploitables.
-
-### 3. Agrégation
-
-Le fichier `Data` étant structuré à la maille **(pays, indicateur, année)**, les données ont été agrégées pour construire un dataframe final où :
-
-- **une ligne = un pays**
-- **une colonne = un indicateur**
-
-### 4. Analyse des corrélations
-
-Les corrélations ont été calculées avec :
-
-- **Pearson**
-- **Spearman**
-
-Objectif :
-
-- repérer les indicateurs redondants ;
-- supprimer ceux dont la corrélation absolue dépasse un seuil de **0.70** ;
-- conserver un ensemble final **plus lisible et moins redondant**.
-
-### 5. Scoring des pays
-
-Une méthode quantitative a ensuite été utilisée pour classer les pays :
-
-- normalisation des indicateurs ;
-- inversion des indicateurs défavorables ;
-- calcul d’un **score composite** ;
-- classement final des pays.
+| Fichier                   | Description                              |
+|---------------------------|------------------------------------------|
+| `EdStatsCountry.csv`      | Informations sur les pays                |
+| `EdStatsCountry-Series.csv`| Lien entre pays et séries d’indicateurs |
+| `EdStatsData.csv`         | Valeurs des indicateurs (pays × années)  |
+| `EdStatsFootNote.csv`     | Notes associées à certaines observations |
+| `EdStatsSeries.csv`       | Dictionnaire des indicateurs             |
 
 ---
 
-## Indicateurs finaux retenus
+## 🔍 Démarche analytique (étape par étape)
 
-Après nettoyage, filtrage et décorrélation, les indicateurs retenus sont :
+### 1️⃣ Exploration et nettoyage initial  
+- Détection des doublons, colonnes vides, valeurs manquantes  
+- Visualisation rapide avec `missingno`  
+- Suppression des colonnes inutilisables  
 
-- `IT.NET.USER.P2` — Utilisateurs d’Internet (pour 100 personnes)
-- `SE.PRM.ENRR` — Taux brut de scolarisation primaire
-- `SE.SEC.ENRR` — Taux brut de scolarisation secondaire
-- `SE.XPD.TOTL.GD.ZS` — Dépenses publiques d’éducation (% du PIB)
-- `SL.UEM.TOTL.ZS` — Taux de chômage total
-- `SP.POP.TOTL` — Population totale
+### 2️⃣ 🚫 Suppression des « faux pays »  
+Les fichiers contiennent des agrégats régionaux (`World`, `High income`, etc.).  
+On les identifie par l’absence de `Region` ou `Income Group` et on les retire avec `isin()` ou `merge()`.
 
-Ces indicateurs ont été retenus car ils couvrent plusieurs dimensions utiles à une décision d’expansion :
+### 3️⃣ 📅 Sélection des années pertinentes  
+On conserve les années **2008 à 2017** (fenêtre récente, historiquement renseignée).  
+Analyse du taux de valeurs manquantes par année pour justifier le choix.
 
-- maturité numérique ;
-- accès au système éducatif ;
-- investissement public ;
-- dynamique socio-économique ;
-- taille du marché.
+### 4️⃣ 📈 Sélection des indicateurs métier  
+Parmi des centaines d’indicateurs, on retient ceux qui couvrent les dimensions clés pour une expansion :  
+- Connectivité numérique  
+- Accès à l’éducation  
+- Investissement public  
+- Dynamique du marché  
+- Taille potentielle du pays  
 
----
+**Première sélection** : 15 indicateurs (listés dans le notebook).
 
-## Résultats principaux
+### 5️⃣ 🔗 Agrégation : un pays = une ligne  
+Le fichier `Data` est au format long (pays × indicateur × année).  
+On utilise `pivot_table()` pour obtenir un tableau où chaque ligne est un pays et chaque colonne un indicateur (moyenne sur 2008‑2017).
 
-### Pays les mieux classés dans l’analyse
+### 6️⃣ 📉 Analyse des corrélations et réduction de la redondance  
+- Calcul des matrices **Pearson** et **Spearman**  
+- Repérage des paires d’indicateurs avec |corr| > 0.70  
+- Suppression des indicateurs redondants pour garder une information non dupliquée  
 
-Les pays suivants ressortent comme les plus favorables dans le scoring final :
-
-1. Denmark
-2. Iceland
-3. Norway
-4. Sweden
-5. Netherlands
-6. Australia
-7. Finland
-8. New Zealand
-9. Belgium
-10. Switzerland
-
-### Lecture métier
-
-Cette sélection fait ressortir des pays :
-
-- très connectés ;
-- globalement stables ;
-- bien structurés sur le plan éducatif ;
-- portés par de bons niveaux de développement humain et institutionnel.
+### 7️⃣ 📊 Construction d’un score composite  
+- Normalisation **min‑max** de chaque indicateur  
+- Inversion du taux de chômage (plus il est bas, mieux c’est)  
+- Pondération des dimensions (poids définis métier)  
+- Calcul du score final → classement des pays
 
 ---
 
-## Limites de l’analyse
+## ✅ Indicateurs finaux retenus
 
-Cette étude constitue une **base de présélection** et non une décision finale à elle seule.
+Après filtrage et décorrélation, voici les **6 indicateurs** utilisés pour le scoring :
 
-Elle ne prend pas directement en compte :
-
-- la concurrence locale ;
-- la réglementation du secteur ;
-- les coûts d’entrée sur le marché ;
-- la culture d’usage ;
-- la stratégie commerciale propre de l’entreprise.
-
-Les résultats doivent donc être interprétés comme un **outil d’aide à la décision**, à compléter par une analyse business plus large.
+| Code indicateur       | Signification                                  | Emoji |
+|-----------------------|------------------------------------------------|:-----:|
+| `IT.NET.USER.P2`      | Utilisateurs d’Internet (pour 100 pers.)       | 💻    |
+| `SE.PRM.ENRR`         | Taux brut de scolarisation primaire            | 🏫    |
+| `SE.SEC.ENRR`         | Taux brut de scolarisation secondaire          | 🎓    |
+| `SE.XPD.TOTL.GD.ZS`   | Dépenses publiques d’éducation (% du PIB)      | 💰    |
+| `SL.UEM.TOTL.ZS`      | Taux de chômage total                           | 📉    |
+| `SP.POP.TOTL`         | Population totale                               | 👥    |
 
 ---
 
-## Structure du projet
+## 🏆 Résultats : Top 10 des pays recommandés
+
+Le classement final obtenu par le score composite :
+
+| Rang | Pays         | Score |
+|------|--------------|-------|
+| 1    | Denmark      | 0.671 |
+| 2    | Iceland      | 0.653 |
+| 3    | Norway       | 0.657 |
+| 4    | Sweden       | 0.638 |
+| 5    | Netherlands  | 0.654 |
+| 6    | Australia    | 0.629 |
+| 7    | Finland      | 0.628 |
+| 8    | New Zealand  | 0.620 |
+| 9    | Belgium      | 0.619 |
+| 10   | Switzerland  | 0.617 |
+
+> 📌 Ces pays se distinguent par une **forte connectivité**, un **bon niveau éducatif**, une **stabilité socio‑économique** et un **marché potentiel intéressant**.
+
+---
+
+## ⚠️ Limites de l’analyse
+
+Ce travail constitue une **présélection quantitative**. Il ne remplace pas une étude business approfondie qui prendrait en compte :
+
+- la concurrence locale  
+- la réglementation du secteur éducatif / numérique  
+- les coûts d’entrée sur le marché  
+- la culture d’usage  
+- la stratégie commerciale propre de l’entreprise  
+
+Les résultats sont à interpréter comme un **outil d’aide à la décision** à enrichir avec des expertises métier.
+
+---
+
+## 📂 Structure du projet
 
 ```text
 P2_educatif_system_analysis/
 ├── notebooks/
-│   └── edstats.ipynb
-├── cleaned/
+│   └── edstats.ipynb          # Notebook principal (analyse complète)
+├── cleaned/                    # (optionnel) exports intermédiaires
 ├── EdStatsCountry.csv
 ├── EdStatsCountry-Series.csv
 ├── EdStatsData.csv
 ├── EdStatsFootNote.csv
 ├── EdStatsSeries.csv
-├── df_final_decorrele.csv
-├── pyproject.toml
+├── df_final_decorrele.csv      # Table finale pays × indicateurs
+├── top_pays_recommandes.csv    # Top 10 avec scores
+├── liste_pays_favoris.csv      # Liste simple des pays recommandés
+├── pyproject.toml              # Dépendances (Poetry)
 ├── poetry.lock
-└── README.md
+└── README.md                   # Ce fichier
+```
 
-Reproduire le projet
-Pré-requis
+---
 
-Python 3.12
+## 🛠️ Reproduction du projet
 
-Poetry
+### Prérequis
+- Python 3.12  
+- [Poetry](https://python-poetry.org/)  
+- JupyterLab / VS Code
 
-VS Code ou JupyterLab
-
-Installation
+### Installation
+```bash
 cd ~/dev/P2_educatif_system_analysis
 poetry config virtualenvs.in-project true
 poetry install
-Lancer JupyterLab
+```
+
+### Lancer le notebook
+```bash
 poetry run jupyter lab
-Ouvrir dans VS Code
-code .
+# ou ouvrir dans VS Code et sélectionner l’interpréteur ./.venv/bin/python
+```
 
-Puis sélectionner l’interpréteur :
+Le notebook principal est `notebooks/edstats.ipynb`.  
+Il contient tout le code, les commentaires et les visualisations.
 
-./.venv/bin/python
-Notebook principal
+---
 
-Le notebook principal du projet est :
+## 📚 Bibliothèques principales
 
-notebooks/edstats.ipynb
+- `pandas` – manipulation de données  
+- `numpy` – calculs numériques  
+- `matplotlib` / `seaborn` – visualisations  
+- `missingno` – visualisation des valeurs manquantes  
+- `jupyter` – environnement interactif  
 
-Il contient :
+---
 
-l’exploration des jeux de données ;
+## 👤 Auteur
 
-le nettoyage ;
+**Vincent Desmouceaux**  
+Projet réalisé dans le cadre d’un exercice d’analyse de données sur les systèmes éducifs (OpenClassrooms).
 
-la sélection des pays et indicateurs ;
+---
 
-les corrélations Pearson / Spearman ;
+## 🎉 Conclusion
 
-les visualisations ;
+Ce projet montre comment transformer un dataset brut et hétérogène en une **analyse structurée, reproductible et orientée décision**.  
+La liste des pays recommandés fournit une **base solide pour amorcer une réflexion stratégique** sur l’expansion internationale d’academy.
 
-le scoring final des pays.
-
-Environnement reproductible
-
-Le projet utilise Poetry pour garantir la reproductibilité de l’environnement Python via :
-
-pyproject.toml
-
-poetry.lock
-
-Bibliothèques principales :
-
-pandas
-
-numpy
-
-matplotlib
-
-seaborn
-
-jupyterlab
-
-notebook
-
-ipykernel
-
-missingno
-
-Compétences mobilisées
-
-nettoyage de données ;
-
-analyse exploratoire ;
-
-filtrage et transformation de dataframes ;
-
-gestion des valeurs manquantes ;
-
-agrégation de données ;
-
-analyse de corrélation ;
-
-scoring quantitatif ;
-
-formalisation de résultats ;
-
-storytelling data.
-
-Conclusion
-
-Ce projet montre comment transformer un dataset large, imparfait et peu directement exploitable en une analyse structurée permettant de formuler une recommandation concrète.
-
-La démarche suivie a permis de :
-
-fiabiliser les données ;
-
-sélectionner des indicateurs pertinents ;
-
-réduire la redondance ;
-
-proposer une liste argumentée de pays cibles.
-
-Le résultat final constitue une base solide pour une discussion stratégique autour d’une expansion internationale.
-
-Auteur
-
-Vincent Desmouceaux
-
-Projet réalisé dans le cadre d’un exercice d’analyse de données sur les systèmes éducatifs.
+N’hésitez pas à explorer le notebook pour plonger dans les détails techniques ! 🚀
